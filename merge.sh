@@ -54,11 +54,11 @@ function downloadMcJar {
 }
 
 mcVer=""
+
 ##########################
-#                        #
 # Merge.sh Input Handler #
-#                        #
 ##########################
+
 # No arg or help arg
 if [[ $1 == "" || $1 == -h || $1 == --help ]]; then
 	sendHelp 0
