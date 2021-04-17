@@ -16,9 +16,9 @@ function sendHelp {
 # returns the latest version
 function getLatestVer {
 	if [[ $1 == -r ]]; then
-		latest=$(curl https://launchermeta.mojang.com/mc/game/version_manifest.json -L | grep -Po "\"release\": \"\K.*?(?=\")")
+		latest=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json -L | grep -Po "\"release\": \"\K.*?(?=\")")
 	elif [[ $1 == -s ]]; then
-		latest=$(curl https://launchermeta.mojang.com/mc/game/version_manifest.json -L | grep -Po "\"snapshot\": \"\K.*?(?=\")")
+		latest=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json -L | grep -Po "\"snapshot\": \"\K.*?(?=\")")
 	fi
 	echo $latest
 }
@@ -26,7 +26,7 @@ function getLatestVer {
 # $1 is the version
 # Gets the version meta for version $1
 function getVerMeta {
-	echo $(curl https://launchermeta.mojang.com/mc/game/version_manifest.json -L | grep -Po "id\": \"$1\".+?l\": \"\K.+?$1\.json")
+	echo $(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json -L | grep -Po "id\": \"$1\".+?l\": \"\K.+?$1\.json")
 }
 
 # $1 is the version meta
@@ -54,9 +54,14 @@ if [[ $1 == "" || $1 == -h || $1 == --help ]]; then
 # Latest release or snapshot arg
 elif [[ $1 == -r || $1 == -s ]]; then
 	mcVer=$(getLatestVer $1)
+	if [ $1 = -r ]; then
+		echo "Latest release is $mcVer"
+	else
+		echo "Latest snapshot is $mcVer"
+	fi
 
 # Version arg
-elif [[ $(curl https://launchermeta.mojang.com/mc/game/version_manifest.json -L) == *$1*  ]]; then
+elif [[ $(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json -L) == *"id\": \"$1\""*  ]]; then
 	mcVer=$1
 
 # Version not found
