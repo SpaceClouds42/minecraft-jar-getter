@@ -30,15 +30,27 @@ function getVerMeta {
 }
 
 # $1 is the version meta
-# Downloads the client jar to /tmp/client-$1.jar
-function downloadClient {
-	echo "Totally downloading client.jar"
-}
+# $2 is client or server
+# $3 is the mc version
+# Downloads the $2 jar to /tmp/$2-$3.jar
+function downloadMcJar {
+	echo "Downloading $2-$3.jar..."
 
-# $1 is the version meta
-# Downloads the server jar to /tmp/server-$1.jar
-function downloadServer {
-	echo "Totally downloading server.jar"
+	hash=$(curl -s $1 -L | grep -Po "$2\": {\"sha1\": \"\K.+?(?=\")")
+	mkdir tmp -p
+	cd tmp
+	curl -s https://launcher.mojang.com/v1/objects/$hash/$2.jar > $2-$3.jar
+	cd ..
+
+	localHash=$(sha1sum tmp/$2-$3.jar | grep -Po ".+(?= )")
+	if [[ "$hash " == $localHash ]]; then
+		echo "Downloaded $2-$3.jar. Hash verified. Size: $(ls -lah tmp/$2-$3.jar | awk '{print $5}')"
+	else
+		rm tmp/$2-$3.jar
+		echo "Downloaded $2-$3.jar. Hashes did not match! Removed file"
+		echo "API says hash should be: $hash"
+		echo "Local file's hash is:    $localHash"
+	fi
 }
 
 mcVer=""
@@ -72,5 +84,7 @@ else
 fi
 
 meta=$(getVerMeta $mcVer)
-downloadClient $meta
-downloadServer $meta
+echo
+downloadMcJar $meta client $mcVer
+echo
+downloadMcJar $meta server $mcVer
